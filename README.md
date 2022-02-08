@@ -37,3 +37,30 @@ This repo has the code for parallel and asynchronous programming in Java
 - ExecutorService is designed to block the thread, we are doing a get call on the **Future**, and this get call is going to block the caller thread.
 - Future is designed to block the task.
 - There is not a good way to combine multiple Futures.
+
+### Fork/Join Framework
+
+- Introduced in Java 7
+- It is an extension to ExecutorService.
+- Fork/Join Framework is designed to achieve **Data Parallelism**
+- ExecutorService is designed to achieve **Task Based Parallelism**
+- **Data Parallelism** is a concept here a given **Task** is recursively split into **SubTasks** until it reaches it least possible size and execute those tasks in parallel
+- Has ForkJoin Pool to support Data Parallelism
+
+#### ForkJoin Pool
+- It contains shared work queue and worker threads.
+- **Shared work queue**: To which clients submit the task.
+- **Worker threads**: can have multiple threads. each thread will have a **Double Ended Work Queue (deck)** 
+- Each and every thread continuously poll **Shared Work Queue** for new tasks.
+- If a Task can be divided into SubTasks then the Task is divided and placed in the Worker thread queue.
+- **WorkStealing:** All threads looks for tasks in the other threads as well. so work is shared among threads equally. This is the reason we have Double Ended Work Queue.
+- Sample implementation: https://github.com/nameishari/parallel-asyncronous-programming-java/blob/main/src/main/java/com/async/forkjoin/ForkJoinUsingRecursion.java
+
+
+#### ForkJoin Task
+- ForkJoin Task represents part of data and its computation.
+- Two tasks we can use mostly: RecursiveTask (which returns a value) and RecursiveAction(which does not return a value)
+
+#### Limitations of ForkJoin
+- Too much of complexity involved when writing the code.
+- parallel streams can be used to achieve the samething.
