@@ -1,4 +1,4 @@
-# parallel-asyncronous
+# parallel-asynchronous
 This repo has the code for parallel and asynchronous programming in Java
 
 ## Threads
@@ -50,7 +50,7 @@ This repo has the code for parallel and asynchronous programming in Java
 #### ForkJoin Pool
 - It contains shared work queue and worker threads.
 - **Shared work queue**: To which clients submit the task.
-- **Worker threads**: can have multiple threads. each thread will have a **Double Ended Work Queue (deck)** 
+- **Worker threads**: can have multiple threads (equal to number of cores in the machine - 1). each thread will have a **Double Ended Work Queue (deck)** 
 - Each and every thread continuously poll **Shared Work Queue** for new tasks.
 - If a Task can be divided into SubTasks then the Task is divided and placed in the Worker thread queue.
 - **WorkStealing:** All threads looks for tasks in the other threads as well. so work is shared among threads equally. This is the reason we have Double Ended Work Queue.
@@ -63,4 +63,25 @@ This repo has the code for parallel and asynchronous programming in Java
 
 #### Limitations of ForkJoin
 - Too much of complexity involved when writing the code.
-- parallel streams can be used to achieve the samething.
+- **parallel streams** can be used to achieve the samething.
+
+### parallel streams internals
+- Three stages:
+- **Split** the data into chunks.
+- **Execute** the data chunks
+- **Combine** the result.
+- **Split**: if the collection is list, then the collection is split into chunks of elements into size 1. This is done by **SplitIterator**. For arraylist there is a class called **ArrayListSplitIterator**
+- **Execute**:The splitted tasks are executed in a **CommonForkJoinPool**
+- Split and execute happens in parallel
+- **Combine:** eg: .collect(Collectors.toList())
+- parallel streams does not guarantee faster performance. It needs to perform additions steps compared to sequential (split, execute and combine). If splitting and combining is easy then performance will be better.
+- For linked lists the performance might be slower, as linked list is difficult to split.
+- The final output order of the parallel streamed collection depends on: **The type of collection** and **SplitIterator implementation of the collection**
+- Arraylist uses Ordered splititerator implementation while Set uses unorderd splititerator implementation.
+- If the prallel stream operation involve boxing and unboxing then the performance will be poor than sequential stream.
+
+#### CommonForkJoinPool
+- Used by ParallelStreams and cannot switch to something else like ThreadPools
+- Used by CompletableFuture and has options to use user defined thread pool.
+- If you use parallel stream in an app, the CommonForkJoinPool is shared by the whole process of the app.
+- By default the parallelism (no of worker threads) is set to: no of cores - 1. But can be changes using environment variable: -Djava.util.concurrent.ForkJoinPool.common.parallelism=100. But this will change the configuration of CommonForkJoinPool in the whole app. 
